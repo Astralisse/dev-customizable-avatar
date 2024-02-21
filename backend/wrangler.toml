@@ -7,10 +7,12 @@ account_id = "b7103c2b55917c2775d0307538ff85db"
 [[r2_buckets]]
 binding = "BUCKET_DEV_AVATARS"
 bucket_name = "dev-avatars"
+preview_bucket_name = "dev"
 
 [[r2_buckets]]
 binding = "BUCKET_DEV_AVATAR_COMPONENTS"
 bucket_name = "dev-avatar-components"
+preview_bucket_name = "dev"
 
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
 # Note: Use secrets to store sensitive data.

@@ -5,9 +5,16 @@ export const make404 = () => {
 export const makeJSON = (value) => {
 	return new Response(JSON.stringify(value), {
 		headers: {
-			'Content-Type': 'application/json'
-		}
+			'Content-Type': 'application/json',
+		},
 	})
+}
+
+export const makeObject = (object) => {
+	const headers = new Headers()
+	object.writeHttpMetadata(headers)
+	headers.set('etag', object.httpEtag)
+	return new Response(object.body, { headers })
 }
 
 export const getObject = async (bucket, name) => {
@@ -15,8 +22,9 @@ export const getObject = async (bucket, name) => {
 	if (object === null) {
 		return make404()
 	}
-	const headers = new Headers()
-	object.writeHttpMetadata(headers)
-	headers.set('etag', object.httpEtag)
-	return new Response(object.body, { headers })
+	return makeObject(object)
+}
+
+export const convertHex = (hex) => {
+	return parseInt(hex, 16).toString()
 }
