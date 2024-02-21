@@ -1,65 +1,65 @@
 {
-  "base": {
-    "0": {
-      "name": "Blue base",
-      "traits": {
-        "Color": "Blue"
-      }
-    },
-    "1": {
-      "name": "Brown base",
-      "traits": {
-        "Color": "Brown"
-      }
-    },
-    "2": {
-      "name": "Green base",
-      "traits": {
-        "Color": "Green"
-      }
-    },
-    "3": {
-      "name": "Orange base",
-      "traits": {
-        "Color": "Orange"
-      }
-    }
-  },
-  "addon": {
-    "0": {
-      "name": "Sunglasses",
-      "traits": {
-        "Item": "Glasses",
-        "Color": "Black"
-      }
-    },
-    "1": {
-      "name": "Golden spectacles",
-      "traits": {
-        "Item": "Glasses",
-        "Color": "Gold"
-      }
-    },
-    "2": {
-      "name": "Heart glasses",
-      "traits": {
-        "Item": "Glasses",
-        "Color": "Red"
-      }
-    },
-    "3": {
-      "name": "Brown hat",
-      "traits": {
-        "Item": "Hat",
-        "Color": "Brown"
-      }
-    },
-    "4": {
-      "name": "Silver hat",
-      "traits": {
-        "Item": "Hat",
-        "Color": "Silver"
-      }
-    }
-  }
+	"base": {
+		"0": {
+			"name": "Blue base",
+			"traits": {
+				"Color": "Blue"
+			}
+		},
+		"1": {
+			"name": "Brown base",
+			"traits": {
+				"Color": "Brown"
+			}
+		},
+		"2": {
+			"name": "Green base",
+			"traits": {
+				"Color": "Green"
+			}
+		},
+		"3": {
+			"name": "Orange base",
+			"traits": {
+				"Color": "Orange"
+			}
+		}
+	},
+	"addon": {
+		"0": {
+			"name": "Sunglasses",
+			"traits": {
+				"Item": "Glasses",
+				"Color": "Black"
+			}
+		},
+		"1": {
+			"name": "Golden spectacles",
+			"traits": {
+				"Item": "Glasses",
+				"Color": "Gold"
+			}
+		},
+		"2": {
+			"name": "Heart glasses",
+			"traits": {
+				"Item": "Glasses",
+				"Color": "Red"
+			}
+		},
+		"3": {
+			"name": "Brown hat",
+			"traits": {
+				"Item": "Hat",
+				"Color": "Brown"
+			}
+		},
+		"4": {
+			"name": "Silver hat",
+			"traits": {
+				"Item": "Hat",
+				"Color": "Silver"
+			}
+		}
+	}
 }

@@ -14,7 +14,7 @@ import items from './items.json' assert { type: 'json' }
 const getItem = async (bucket, path, hexTypes) => {
 	const itemType = path.at(0)
 	if (itemType in items) {
-		const id = hexTypes.includes(itemType) ? parseInt(path.at(2), 16).toString() : path.at(2)
+		const id = hexTypes.includes(itemType) ? utils.convertHex(path.at(2)) : path.at(2)
 		if (path.at(1) === 'metadata' && id in items[itemType]) {
 			const item = items[itemType][id]
 			return utils.makeJSON({
@@ -45,8 +45,8 @@ export default {
 				return new Response('Method Not Allowed', {
 					status: 405,
 					headers: {
-						Allow: 'GET, PUT, DELETE'
-					}
+						Allow: 'GET, PUT',
+					},
 				})
 		}
 	},
