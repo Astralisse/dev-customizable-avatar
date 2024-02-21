@@ -9,6 +9,7 @@
  */
 
 import * as utils from './utils.js'
+import contracts from './contracts.js'
 import items from './items.json' assert { type: 'json' }
 
 const getItem = async (bucket, path, hexTypes) => {
