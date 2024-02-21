@@ -34,6 +34,35 @@ const getItem = async (bucket, path, hexTypes) => {
 	return utils.make404()
 }
 
+const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonIds = null) => {
+	const c = contracts()
+	const isRequest = requestedAddonIds !== null
+	const id = path.at(1)
+	const owner = await c.base.ownerOf(id)
+
+	let addonIds = requestedAddonIds ?? (await (await avatarsBucket.get(`${owner}.json`)).json()) ?? []
+	let needsUpdate = isRequest
+	if (addonIds.length > 0) {
+		const balances = await c.addons.balanceOfBatch(Array(addonIds.length).fill(owner), addonIds)
+		if (balances.some((b) => b === 0)) {
+			addonIds = addonIds.filter((a, idx) => balances[idx] > 0)
+			needsUpdate = true
+		}
+	}
+
+	if (addonIds.length === 0) {
+		if (needsUpdate) {
+			await avatarsBucket.delete(`${owner}.png`)
+			await avatarsBucket.delete(`${owner}.json`)
+		}
+		return utils.makeJSON(null)
+	}
+
+	// TODO: update the avatar if needsUpdate
+
+	return await utils.getObject(avatarsBucket, `${owner}.png`)
+}
+
 export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url)
@@ -41,7 +70,16 @@ export default {
 
 		switch (request.method) {
 			case 'GET':
+				if (path.at(0) === 'avatar') {
+					return await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path)
+				}
 				return await getItem(env.BUCKET_DEV_AVATAR_COMPONENTS, path, ['addon'])
+			case 'PUT':
+				const body = await request.json()
+				if (path.at(0) === 'avatar' && Array.isArray(body)) {
+					return await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path, body)
+				}
+				return utils.make404()
 			default:
 				return new Response('Method Not Allowed', {
 					status: 405,
