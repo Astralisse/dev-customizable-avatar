@@ -50,7 +50,12 @@ const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonId
 	const c = contracts()
 	const isRequest = requestedAddonIds !== null
 	const id = path.at(1)
-	const owner = await c.base.ownerOf(id)
+	let owner
+	try {
+		owner = await c.base.ownerOf(id)
+	} catch {
+		return utils.make404()
+	}
 
 	let addonIds = requestedAddonIds ?? (await (await avatarsBucket.get(`${owner}.json`)).json()) ?? []
 	let needsUpdate = isRequest
@@ -67,7 +72,7 @@ const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonId
 			await avatarsBucket.delete(`${owner}.png`)
 			await avatarsBucket.delete(`${owner}.json`)
 		}
-		return utils.makeJSON(null)
+		return utils.make404()
 	}
 
 	if (needsUpdate) {
