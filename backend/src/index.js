@@ -8,6 +8,8 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+import 'jimp'
+
 import * as utils from './utils.js'
 import contracts from './contracts.js'
 import items from './items.json' assert { type: 'json' }
@@ -34,6 +36,16 @@ const getItem = async (bucket, path, hexTypes) => {
 	return utils.make404()
 }
 
+const compositeAvatar = async (bucket, baseId, addonIds) => {
+	const imgBase = await bucket.get(`base-${baseId}.png`)
+	const img = await Jimp.read(await imgBase.arrayBuffer())
+	for (const a of addonIds) {
+		const imgAddon = await bucket.get(`addon-${a}.png`)
+		img.composite(await Jimp.read(await imgAddon.arrayBuffer()), 0, 0)
+	}
+	return await img.getBufferAsync(Jimp.MIME_PNG)
+}
+
 const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonIds = null) => {
 	const c = contracts()
 	const isRequest = requestedAddonIds !== null
@@ -58,7 +70,12 @@ const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonId
 		return utils.makeJSON(null)
 	}
 
-	// TODO: update the avatar if needsUpdate
+	if (needsUpdate) {
+		const avatar = await compositeAvatar(componentsBucket, id, addonIds)
+		const object = await avatarsBucket.put(`${owner}.png`, avatar)
+		await avatarsBucket.put(`${owner}.json`, JSON.stringify(addonIds))
+		return utils.makeObject(object)
+	}
 
 	return await utils.getObject(avatarsBucket, `${owner}.png`)
 }
