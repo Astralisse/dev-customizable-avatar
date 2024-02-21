@@ -57,7 +57,7 @@ const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonId
 		return utils.make404()
 	}
 
-	let addonIds = requestedAddonIds ?? (await (await avatarsBucket.get(`${owner}.json`)).json()) ?? []
+	let addonIds = requestedAddonIds ?? (await (await avatarsBucket.get(`${owner}.json`))?.json()) ?? []
 	let needsUpdate = isRequest
 	if (addonIds.length > 0) {
 		const balances = await c.addons.balanceOfBatch(Array(addonIds.length).fill(owner), addonIds)
