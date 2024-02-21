@@ -5,6 +5,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 contract AvatarAddons is Ownable, ERC1155 {
+    string public name = "Avatar Addons";
+
     constructor()
         Ownable(msg.sender)
         ERC1155("https://0.dev.astralisse.com/addon/metadata/{id}")

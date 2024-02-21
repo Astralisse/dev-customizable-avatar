@@ -39,7 +39,7 @@ contract AvatarBase is Ownable, ERC721, IERC5484 {
     string _customBaseURI = "https://0.dev.astralisse.com/base/metadata/";
     uint256 _nextTokenId = 0;
 
-    constructor() Ownable(msg.sender) ERC721("AvatarBase", "AB") {}
+    constructor() Ownable(msg.sender) ERC721("Avatar Base", "AB") {}
 
     function _update(
         address to,
