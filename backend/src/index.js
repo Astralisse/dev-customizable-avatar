@@ -20,7 +20,7 @@ const getItem = async (bucket, path, hexTypes) => {
 		const id = hexTypes.includes(itemType) ? utils.convertHex(path.at(2)) : path.at(2)
 		if (path.at(1) === 'metadata' && id in items[itemType]) {
 			const item = items[itemType][id]
-			return utils.makeJSON({
+			return JSON.stringify({
 				image: `https://0.dev.astralisse.com/${itemType}/image/${id}`,
 				name: item.name,
 				attributes: Object.entries(item.traits).map((trait) => ({
@@ -30,10 +30,10 @@ const getItem = async (bucket, path, hexTypes) => {
 			})
 		}
 		if (path.at(1) === 'image') {
-			return await utils.getObject(bucket, `${itemType}-${id}.png`)
+			return { object: await bucket.get(`${itemType}-${id}.png`) }
 		}
 	}
-	return utils.make404()
+	return 404
 }
 
 const compositeAvatar = async (bucket, baseId, addonIds) => {
@@ -54,7 +54,7 @@ const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonId
 	try {
 		owner = await c.base.ownerOf(id)
 	} catch {
-		return utils.make404()
+		return 404
 	}
 
 	let addonIds = requestedAddonIds ?? (await (await avatarsBucket.get(`${owner}.json`))?.json()) ?? []
@@ -72,42 +72,62 @@ const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonId
 			await avatarsBucket.delete(`${owner}.png`)
 			await avatarsBucket.delete(`${owner}.json`)
 		}
-		return utils.make404()
+		return 404
 	}
 
 	if (needsUpdate) {
 		const avatar = await compositeAvatar(componentsBucket, id, addonIds)
 		const object = await avatarsBucket.put(`${owner}.png`, avatar)
 		await avatarsBucket.put(`${owner}.json`, JSON.stringify(addonIds))
-		return utils.makeObject(object, avatar)
+		return { object, body: avatar }
 	}
 
-	return await utils.getObject(avatarsBucket, `${owner}.png`)
+	return { object: await avatarsBucket.get(`${owner}.png`) }
+}
+
+const createResponse = (value, headers = {}) => {
+	if (Number.isInteger(value)) {
+		return utils.makeEmpty(value, headers)
+	}
+	if (typeof value === 'string') {
+		return utils.makeJSON(value, headers)
+	}
+	return utils.makeObject(value.object, value.body ?? null, headers)
 }
 
 export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url)
 		const path = url.pathname.slice(1).split('/')
+		const corsHeaders = env.ALLOWED_ORIGINS.includes(request.headers.origin)
+			? { 'Access-Control-Allow-Origin': request.headers.origin }
+			: {}
 
+		let value = 404
 		switch (request.method) {
 			case 'GET':
 				if (path.at(0) === 'avatar') {
-					return await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path)
+					value = await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path)
+				} else {
+					value = await getItem(env.BUCKET_DEV_AVATAR_COMPONENTS, path, ['addon'])
 				}
-				return await getItem(env.BUCKET_DEV_AVATAR_COMPONENTS, path, ['addon'])
+				return createResponse(value, corsHeaders)
 			case 'PUT':
 				const body = await request.json()
 				if (path.at(0) === 'avatar' && Array.isArray(body)) {
-					return await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path, body)
+					value = await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path, body)
 				}
-				return utils.make404()
+				return createResponse(value, corsHeaders)
+			case 'OPTIONS':
+				return utils.makeEmpty(204, {
+					...corsHeaders,
+					'Access-Control-Allow-Methods': 'OPTIONS, GET, PUT',
+					'Access-Control-Max-Age': '86400',
+					'Access-Control-Allow-Headers': 'Content-Type',
+				})
 			default:
-				return new Response('Method Not Allowed', {
-					status: 405,
-					headers: {
-						Allow: 'GET, PUT',
-					},
+				return utils.makeEmpty(405, {
+					Allow: 'OPTIONS, GET, PUT',
 				})
 		}
 	},

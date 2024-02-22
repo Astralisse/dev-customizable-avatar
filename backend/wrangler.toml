@@ -1,8 +1,11 @@
 name = "dev-customizable-avatar"
+account_id = "b7103c2b55917c2775d0307538ff85db"
+workers_dev = false
 main = "src/index.js"
 compatibility_date = "2024-02-08"
 
-account_id = "b7103c2b55917c2775d0307538ff85db"
+[vars]
+ALLOWED_ORIGINS = ["https://1.dev.astralisse.com", "http://localhost:3000"]
 
 [[r2_buckets]]
 binding = "BUCKET_DEV_AVATARS"

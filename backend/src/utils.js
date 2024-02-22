@@ -1,28 +1,26 @@
-export const make404 = () => {
-	return new Response('Not Found', { status: 404 })
+export const makeEmpty = (status = 200, headers = {}) => {
+	return new Response(null, { status, headers })
 }
 
-export const makeJSON = (value) => {
-	return new Response(JSON.stringify(value), {
+export const makeJSON = (str, headers = {}) => {
+	return new Response(str, {
 		headers: {
 			'Content-Type': 'application/json',
+			...headers,
 		},
 	})
 }
 
-export const makeObject = (object, body = null) => {
-	const headers = new Headers()
-	object.writeHttpMetadata(headers)
-	headers.set('etag', object.httpEtag)
-	return new Response(body ?? object.body, { headers })
-}
-
-export const getObject = async (bucket, name) => {
-	const object = await bucket.get(name)
-	if (object === null) {
-		return make404()
-	}
-	return makeObject(object)
+export const makeObject = (object, body = null, headers = {}) => {
+	const metaHeaders = new Headers()
+	object.writeHttpMetadata(metaHeaders)
+	metaHeaders.set('etag', object.httpEtag)
+	return new Response(body ?? object.body, {
+		headers: {
+			...metaHeaders,
+			...headers,
+		},
+	})
 }
 
 export const convertHex = (hex) => {
