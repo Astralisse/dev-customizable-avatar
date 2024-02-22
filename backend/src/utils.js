@@ -10,11 +10,11 @@ export const makeJSON = (value) => {
 	})
 }
 
-export const makeObject = (object) => {
+export const makeObject = (object, body = null) => {
 	const headers = new Headers()
 	object.writeHttpMetadata(headers)
 	headers.set('etag', object.httpEtag)
-	return new Response(object.body, { headers })
+	return new Response(body ?? object.body, { headers })
 }
 
 export const getObject = async (bucket, name) => {

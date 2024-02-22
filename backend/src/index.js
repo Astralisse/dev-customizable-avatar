@@ -79,7 +79,7 @@ const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonId
 		const avatar = await compositeAvatar(componentsBucket, id, addonIds)
 		const object = await avatarsBucket.put(`${owner}.png`, avatar)
 		await avatarsBucket.put(`${owner}.json`, JSON.stringify(addonIds))
-		return utils.makeObject(object)
+		return utils.makeObject(object, avatar)
 	}
 
 	return await utils.getObject(avatarsBucket, `${owner}.png`)
