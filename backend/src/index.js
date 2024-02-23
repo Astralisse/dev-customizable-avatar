@@ -14,10 +14,11 @@ import * as utils from './utils.js'
 import contracts from './contracts.js'
 import items from './items.json' assert { type: 'json' }
 
-const getItem = async (bucket, path, hexTypes) => {
+const getItem = async (bucket, path, hexTypes, loopTypes) => {
 	const itemType = path.at(0)
 	if (itemType in items) {
-		const id = hexTypes.includes(itemType) ? utils.convertHex(path.at(2)) : path.at(2)
+		const rawId = hexTypes.includes(itemType) ? utils.convertHex(path.at(2)) : path.at(2)
+		const id = loopTypes.includes(itemType) ? rawId % Object.keys(items[itemType]).length : rawId
 		if (path.at(1) === 'metadata' && id in items[itemType]) {
 			const item = items[itemType][id]
 			return JSON.stringify({
@@ -99,8 +100,8 @@ export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url)
 		const path = url.pathname.slice(1).split('/')
-		const corsHeaders = env.ALLOWED_ORIGINS.includes(request.headers.get("Origin"))
-			? { 'Access-Control-Allow-Origin': request.headers.get("Origin") }
+		const corsHeaders = env.ALLOWED_ORIGINS.includes(request.headers.get('Origin'))
+			? { 'Access-Control-Allow-Origin': request.headers.get('Origin') }
 			: {}
 
 		let value = 404
@@ -109,7 +110,7 @@ export default {
 				if (path.at(0) === 'avatar') {
 					value = await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path)
 				} else {
-					value = await getItem(env.BUCKET_DEV_AVATAR_COMPONENTS, path, ['addon'])
+					value = await getItem(env.BUCKET_DEV_AVATAR_COMPONENTS, path, ['addon'], ['base'])
 				}
 				return createResponse(value, corsHeaders)
 			case 'PUT':
