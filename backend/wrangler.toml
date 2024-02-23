@@ -5,7 +5,7 @@ main = "src/index.js"
 compatibility_date = "2024-02-08"
 
 [vars]
-ALLOWED_ORIGINS = ["https://1.dev.astralisse.com", "http://localhost:3000"]
+ALLOWED_ORIGINS = ["https://1.dev.astralisse.com", "https://localhost:3000"]
 
 [[r2_buckets]]
 binding = "BUCKET_DEV_AVATARS"
