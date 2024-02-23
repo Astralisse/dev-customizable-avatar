@@ -99,8 +99,8 @@ export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url)
 		const path = url.pathname.slice(1).split('/')
-		const corsHeaders = env.ALLOWED_ORIGINS.includes(request.headers.origin)
-			? { 'Access-Control-Allow-Origin': request.headers.origin }
+		const corsHeaders = env.ALLOWED_ORIGINS.includes(request.headers.get("Origin"))
+			? { 'Access-Control-Allow-Origin': request.headers.get("Origin") }
 			: {}
 
 		let value = 404
