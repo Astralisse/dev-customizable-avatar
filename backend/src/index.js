@@ -42,7 +42,7 @@ const composite = async (img, object) => {
 }
 
 const compositeAvatar = async (bucket, addonIds) => {
-	const imgBase = await bucket.get(`base.png`)
+	const imgBase = await bucket.get('base.png')
 	const img = await Jimp.read(await imgBase.arrayBuffer())
 	for (const a of addonIds) {
 		await composite(img, await bucket.get(`addon-${a}.png`))
@@ -76,7 +76,7 @@ const getAvatar = async (avatarsBucket, componentsBucket, id, requestedAddonIds 
 			await avatarsBucket.delete(`${owner}.png`)
 			await avatarsBucket.delete(`${owner}.json`)
 		}
-		return 404
+		return { object: await componentsBucket.get('base.png') }
 	}
 
 	if (needsUpdate) {
