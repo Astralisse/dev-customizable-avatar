@@ -1,64 +1,52 @@
 {
-	"base": {
+	"addon": {
 		"0": {
-			"name": "Blue base",
+			"name": "3D glasses",
 			"traits": {
-				"Color": "Blue"
+				"Item": "Glasses",
+				"Color": "White"
 			}
 		},
 		"1": {
-			"name": "Brown base",
-			"traits": {
-				"Color": "Brown"
-			}
-		},
-		"2": {
-			"name": "Green base",
-			"traits": {
-				"Color": "Green"
-			}
-		},
-		"3": {
-			"name": "Orange base",
-			"traits": {
-				"Color": "Orange"
-			}
-		}
-	},
-	"addon": {
-		"0": {
 			"name": "Sunglasses",
 			"traits": {
 				"Item": "Glasses",
 				"Color": "Black"
 			}
 		},
-		"1": {
-			"name": "Golden spectacles",
+		"2": {
+			"name": "Monocle",
 			"traits": {
 				"Item": "Glasses",
 				"Color": "Gold"
 			}
 		},
-		"2": {
-			"name": "Heart glasses",
+		"3": {
+			"name": "Laser eye",
 			"traits": {
 				"Item": "Glasses",
 				"Color": "Red"
 			}
 		},
-		"3": {
-			"name": "Brown hat",
+		"4": {
+			"name": "Cowboy hat",
 			"traits": {
 				"Item": "Hat",
 				"Color": "Brown"
 			}
 		},
-		"4": {
+		"5": {
 			"name": "Silver hat",
 			"traits": {
 				"Item": "Hat",
-				"Color": "Silver"
+				"Color": "Gray"
+			}
+		},
+		"6": {
+			"name": "Crown",
+			"traits": {
+				"Item": "Hat",
+				"Color": "Gold"
 			}
 		}
 	}

@@ -5,12 +5,12 @@ export default () => {
 
 	return {
 		base: new ethers.Contract(
-			'0xECEd1b3641e9E4649c4950C8518731616157DA17',
+			'0x2B6d1e40db1BCBbfb06d3CA6B75B12aCA94833F1',
 			['function ownerOf(uint256) external view returns (address)'],
 			provider,
 		),
 		addons: new ethers.Contract(
-			'0xf60870063925ED456e053696D5c3A60adA990C6D',
+			'0x02ec004DaB8d5719BC42D7d011ff0f282D1b610F',
 			['function balanceOfBatch(address[], uint256[]) external view returns (uint256[])'],
 			provider,
 		),

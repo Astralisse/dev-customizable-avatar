@@ -37,20 +37,22 @@ const getItem = async (bucket, path, hexTypes, loopTypes) => {
 	return 404
 }
 
-const compositeAvatar = async (bucket, baseId, addonIds) => {
-	const imgBase = await bucket.get(`base-${baseId}.png`)
+const composite = async (img, object) => {
+	img.composite(await Jimp.read(await object.arrayBuffer()), 0, 0)
+}
+
+const compositeAvatar = async (bucket, addonIds) => {
+	const imgBase = await bucket.get(`base.png`)
 	const img = await Jimp.read(await imgBase.arrayBuffer())
 	for (const a of addonIds) {
-		const imgAddon = await bucket.get(`addon-${a}.png`)
-		img.composite(await Jimp.read(await imgAddon.arrayBuffer()), 0, 0)
+		await composite(img, await bucket.get(`addon-${a}.png`))
 	}
 	return await img.getBufferAsync(Jimp.MIME_PNG)
 }
 
-const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonIds = null) => {
+const getAvatar = async (avatarsBucket, componentsBucket, id, requestedAddonIds = null) => {
 	const c = contracts()
 	const isRequest = requestedAddonIds !== null
-	const id = path.at(1)
 	let owner
 	try {
 		owner = await c.base.ownerOf(id)
@@ -58,7 +60,8 @@ const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonId
 		return 404
 	}
 
-	let addonIds = requestedAddonIds ?? (await (await avatarsBucket.get(`${owner}.json`))?.json()) ?? []
+	let ownerData = await (await avatarsBucket.get(`${owner}.json`))?.json()
+	let addonIds = requestedAddonIds ?? ownerData?.addonIds ?? []
 	let needsUpdate = isRequest
 	if (addonIds.length > 0) {
 		const balances = await c.addons.balanceOfBatch(Array(addonIds.length).fill(owner), addonIds)
@@ -79,7 +82,7 @@ const getAvatar = async (avatarsBucket, componentsBucket, path, requestedAddonId
 	if (needsUpdate) {
 		const avatar = await compositeAvatar(componentsBucket, id, addonIds)
 		const object = await avatarsBucket.put(`${owner}.png`, avatar)
-		await avatarsBucket.put(`${owner}.json`, JSON.stringify(addonIds))
+		await avatarsBucket.put(`${owner}.json`, JSON.stringify({ addonIds }))
 		return { object, body: avatar }
 	}
 
@@ -108,7 +111,14 @@ export default {
 		switch (request.method) {
 			case 'GET':
 				if (path.at(0) === 'avatar') {
-					value = await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path)
+					if (path.at(1) === 'metadata') {
+						value = JSON.stringify({
+							image: `https://0.dev.astralisse.com/avatar/image/${path.at(2)}`,
+							name: 'Character',
+						})
+					} else if (path.at(1) === 'image') {
+						value = await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path.at(2))
+					}
 				} else {
 					value = await getItem(env.BUCKET_DEV_AVATAR_COMPONENTS, path, ['addon'], ['base'])
 				}
@@ -116,7 +126,7 @@ export default {
 			case 'PUT':
 				const body = await request.json()
 				if (path.at(0) === 'avatar' && Array.isArray(body)) {
-					value = await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path, body)
+					value = await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path.at(1), body)
 				}
 				return createResponse(value, corsHeaders)
 			case 'OPTIONS':

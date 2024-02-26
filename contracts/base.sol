@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
 interface IERC5484 {
     /// A guideline to standardlize burn-authorization's number coding
@@ -33,10 +34,10 @@ interface IERC5484 {
     function burnAuth(uint256 tokenId) external view returns (BurnAuth);
 }
 
-contract AvatarBase is Ownable, ERC721, IERC5484 {
+contract AvatarBase is Ownable, ERC721Enumerable, IERC5484 {
     using Strings for uint256;
 
-    string _customBaseURI = "https://0.dev.astralisse.com/base/metadata/";
+    string _customBaseURI = "https://0.dev.astralisse.com/avatar/metadata/";
     uint256 _nextTokenId = 0;
 
     constructor() Ownable(msg.sender) ERC721("Avatar Base", "AB") {}
@@ -53,11 +54,8 @@ contract AvatarBase is Ownable, ERC721, IERC5484 {
         return super._update(to, tokenId, auth);
     }
 
-    function tokenURI(
-        uint256 tokenId
-    ) public view virtual override returns (string memory) {
-        _requireOwned(tokenId);
-        return string.concat(_customBaseURI, tokenId.toString());
+    function _baseURI() internal view virtual override returns (string memory) {
+        return _customBaseURI;
     }
 
     function setBaseURI(string memory uri) public onlyOwner {
