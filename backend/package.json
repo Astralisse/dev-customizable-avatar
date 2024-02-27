@@ -11,7 +11,7 @@
     "eslint": "^8.56.0",
     "prettier": "^3.2.5",
     "prettier-eslint": "^16.3.0",
-    "wrangler": "^3.28.4"
+    "wrangler": "^3.29.0"
   },
   "dependencies": {
     "ethers": "^6.11.1",

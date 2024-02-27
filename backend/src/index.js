@@ -41,16 +41,19 @@ const composite = async (img, object) => {
 	img.composite(await Jimp.read(await object.arrayBuffer()), 0, 0)
 }
 
-const compositeAvatar = async (bucket, addonIds) => {
+const compositeAvatar = async (bucket, addonIds, discordRole = null) => {
 	const imgBase = await bucket.get('base.png')
 	const img = await Jimp.read(await imgBase.arrayBuffer())
 	for (const a of addonIds) {
 		await composite(img, await bucket.get(`addon-${a}.png`))
 	}
+	if (discordRole !== null) {
+		await composite(img, await bucket.get(`role-${discordRole}.png`))
+	}
 	return await img.getBufferAsync(Jimp.MIME_PNG)
 }
 
-const getAvatar = async (avatarsBucket, componentsBucket, id, requestedAddonIds = null) => {
+const getAvatar = async (avatarsBucket, componentsBucket, discord, id, requestedAddonIds = null) => {
 	const c = contracts()
 	const isRequest = requestedAddonIds !== null
 	let owner
@@ -71,6 +74,29 @@ const getAvatar = async (avatarsBucket, componentsBucket, id, requestedAddonIds 
 		}
 	}
 
+	let discordRole = null
+	const discordUserId =
+		{
+			'0xc810d010F9FECfa5E330E3C839622298145cceb3': '315927901461676035',
+			'0x5aa17e7BA791b61ADe09534029C96684537BA375': '1196365869698265160',
+		}[owner] ?? null
+	if (discordUserId !== null) {
+		const fetchParams = {
+			headers: {
+				Authorization: `Bot ${discord.token}`,
+				'User-Agent': 'AstralisseTest_1',
+			},
+		}
+		const member = await (await fetch(`https://discord.com/api/v10/guilds/${discord.guild}/members/${discordUserId}`, fetchParams)).json()
+		const guild = await (await fetch(`https://discord.com/api/v10/guilds/${discord.guild}`, fetchParams)).json()
+		const guildRoles = guild.roles.reduce((roles, r) => ({ ...roles, [r.id]: r.name }), {})
+		const roleNames = member.roles.map((roleId) => guildRoles[roleId])
+		if (roleNames.includes('Dre')) discordRole = 'dre'
+		else if (roleNames.includes('Mahler')) discordRole = 'mahler'
+		else if (roleNames.includes('Bach')) discordRole = 'bach'
+		if (discordRole !== ownerData?.discordRole) needsUpdate = true
+	}
+
 	if (addonIds.length === 0) {
 		if (needsUpdate) {
 			await avatarsBucket.delete(`${owner}.png`)
@@ -80,9 +106,9 @@ const getAvatar = async (avatarsBucket, componentsBucket, id, requestedAddonIds 
 	}
 
 	if (needsUpdate) {
-		const avatar = await compositeAvatar(componentsBucket, id, addonIds)
+		const avatar = await compositeAvatar(componentsBucket, addonIds, discordRole)
 		const object = await avatarsBucket.put(`${owner}.png`, avatar)
-		await avatarsBucket.put(`${owner}.json`, JSON.stringify({ addonIds }))
+		await avatarsBucket.put(`${owner}.json`, JSON.stringify({ addonIds, discordRole }))
 		return { object, body: avatar }
 	}
 
@@ -106,6 +132,11 @@ export default {
 		const corsHeaders = env.ALLOWED_ORIGINS.includes(request.headers.get('Origin'))
 			? { 'Access-Control-Allow-Origin': request.headers.get('Origin') }
 			: {}
+		const discord = {
+			token: env.DISCORD_TOKEN,
+			app: env.APP_ID,
+			guild: env.GUILD_ID,
+		}
 
 		let value = 404
 		switch (request.method) {
@@ -117,7 +148,7 @@ export default {
 							name: 'Character',
 						})
 					} else if (path.at(1) === 'image') {
-						value = await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path.at(2))
+						value = await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, discord, path.at(2))
 					}
 				} else {
 					value = await getItem(env.BUCKET_DEV_AVATAR_COMPONENTS, path, ['addon'], ['base'])
@@ -126,7 +157,7 @@ export default {
 			case 'PUT':
 				const body = await request.json()
 				if (path.at(0) === 'avatar' && Array.isArray(body)) {
-					value = await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, path.at(1), body)
+					value = await getAvatar(env.BUCKET_DEV_AVATARS, env.BUCKET_DEV_AVATAR_COMPONENTS, discord, path.at(1), body)
 				}
 				return createResponse(value, corsHeaders)
 			case 'OPTIONS':
