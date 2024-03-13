@@ -22,7 +22,3 @@ export const makeObject = (object, body = null, headers = {}) => {
 		},
 	})
 }
-
-export const convertHex = (hex) => {
-	return parseInt(hex, 16).toString()
-}
